@@ -12,6 +12,9 @@ firebase_admin.initialize_app(cred, {
 # Initialize Firestore client
 db = firestore.client()
 
+# Keep track of the latest uploaded file
+latest_file = None
+
 def upload_file():
     global latest_file
 
@@ -34,33 +37,45 @@ def upload_file():
         doc_ref.set({
             'filename': file.filename,
             'url': blob.public_url,
-            'text_content': ''  # Placeholder for text content
+            'text_content': '',  # Placeholder for text content
+            'id': doc_ref.id
         })
 
         # Update latest file
         latest_file = {
             'filename': file.filename,
             'url': blob.public_url,
-            'text_content': ''  # Placeholder for text content
+            'text_content': '',  # Placeholder for text content
+            'id': doc_ref.id
         }
 
         return redirect(url_for('manage'))
 
-
-def view_file():
+def manage_file():
     global latest_file
 
-    if not latest_file:
-        return 'No file uploaded yet'
+    if latest_file:
+        files = [latest_file]
+    else:
+        files = []
 
-    # Retrieve text content if available
-    text_content = latest_file.get('text_content', '')
+    return render_template('manage.html', files=files)
+
+def view_file(file_id):
+    # Retrieve the specific document from Firestore
+    doc_ref = db.collection('files').document(file_id)
+    file = doc_ref.get().to_dict()
+
+    if not file:
+        return 'File not found', 404
+
+    text_content = file.get('text_content', '')
 
     if not text_content:
         bucket = storage.bucket()
-        blob = bucket.blob(latest_file['filename'])
+        blob = bucket.blob(file['filename'])
         text_content = extract_pdf_text(blob)
-        latest_file['text_content'] = text_content
+        file['text_content'] = text_content
+        doc_ref.update({'text_content': text_content})
 
-    return render_template('view.html', file=latest_file)
-
+    return render_template('view.html', file=file)
