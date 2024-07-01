@@ -1,13 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for
 import firebase_admin
+from pdf_to_text import extract_pdf_text
 from firebase_admin import credentials, storage, firestore
-import io
-from PyPDF2 import PdfReader
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate('D:\\Bangalore codes\\AI-PROJECT-MANAGER\\backend\\API_credentials.json')
+cred = credentials.Certificate('backend\\API_credentials.json')
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'freesic-storage.appspot.com'
 })
@@ -85,22 +84,3 @@ def view_file():
         latest_file['text_content'] = text_content
 
     return render_template('view.html', file=latest_file)
-
-def extract_pdf_text(blob):
-    # Download PDF file content as bytes
-    pdf_bytes = blob.download_as_bytes()
-
-    # Process PDF content
-    pdf_file = io.BytesIO(pdf_bytes)
-    pdf_reader = PdfReader(pdf_file)
-    
-    num_pages = len(pdf_reader.pages)
-    text_content = ''
-    for page_num in range(num_pages):
-        page = pdf_reader.pages[page_num]
-        text_content += page.extract_text()
-
-    return text_content
-
-if __name__ == '__main__':
-    app.run(debug=True)
