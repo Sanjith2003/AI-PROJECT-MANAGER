@@ -1,4 +1,0 @@
-\venv
-backend\API_credentials.json
-.env
-backend/__pycache__/
