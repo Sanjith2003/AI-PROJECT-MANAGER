@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 from pdf_to_text import extract_pdf_text
 
+
 # Initialize Firebase Admin SDK
 load_dotenv()
 
