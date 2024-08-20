@@ -4,7 +4,7 @@ from flask import request, redirect, url_for, render_template
 from dotenv import load_dotenv
 import os
 from pdf_to_text import extract_pdf_text
-
+from model import process_text_with_model  # Import the model function here
 
 # Initialize Firebase Admin SDK
 load_dotenv()
@@ -69,11 +69,26 @@ def manage_file():
 
     return render_template('manage.html', files=files)
 
+def get_file_document(file_id):
+    doc_ref = db.collection('files').document(file_id)
+    file = doc_ref.get().to_dict()
+    return file, doc_ref
+
+def extract_text_from_pdf(file):
+    bucket = storage.bucket()  # Use the initialized bucket
+    blob = bucket.blob(file['filename'])
+    text_content = extract_pdf_text(blob)
+    return text_content
+
+def update_text_content(doc_ref, text_content):
+    doc_ref.update({'text_content': text_content})
+
+def render_file_view(file):
+    return render_template('view.html', file=file)
+
 def view_file(file_id):
     try:
-        # Retrieve the specific document from Firestore
-        doc_ref = db.collection('files').document(file_id)
-        file = doc_ref.get().to_dict()
+        file, doc_ref = get_file_document(file_id)
 
         if not file:
             return 'File not found', 404
@@ -81,12 +96,14 @@ def view_file(file_id):
         text_content = file.get('text_content', '')
 
         if not text_content:
-            bucket = storage.bucket()
-            blob = bucket.blob(file['filename'])
-            text_content = extract_pdf_text(blob)
+            text_content = extract_text_from_pdf(file)
             file['text_content'] = text_content
-            doc_ref.update({'text_content': text_content})
+            update_text_content(doc_ref, text_content)
 
-        return render_template('view.html', file=file)
+        # Call the model to process the extracted text
+        model_response = process_text_with_model(text_content)
+
+        return model_response
+
     except Exception as e:
         return f'Error: {str(e)}', 500
