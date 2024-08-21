@@ -4,9 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Model Response</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #f0f8ff; /* Light background for contrast */
+        }
+        h1 {
+            text-align: center;
+        }
+        .response-box {
+            background-color: #87CEEB; /* Sea blue background */
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00BFFF; /* Slightly darker blue border */
+            max-width: 100%;
+            overflow-x: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            box-sizing: border-box;
+        }
+        pre {
+            white-space: pre-wrap; /* Ensures text wraps to fit the screen */
+            word-wrap: break-word; /* Breaks long words to fit the container */
+            margin: 0;
+            color: #002e4c; /* Dark blue text for readability */
+        }
+    </style>
 </head>
 <body>
     <h1>Model Response</h1>
-    <pre>{{ response }}</pre>
+    <div class="response-box">
+        <pre>{{ response }}</pre>
+    </div>
 </body>
 </html>

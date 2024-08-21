@@ -1,4 +1,5 @@
-from openai import OpenAI
+import json
+from llamaapi import LlamaAPI
 import os
 from dotenv import load_dotenv
 
@@ -6,19 +7,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv("API_KEY")
-base_url = os.getenv("BASE_URL")
 
-client = OpenAI(
-    api_key=api_key,
-    base_url=base_url
-)
+# Initialize the SDK
+llama = LlamaAPI(api_key)
 
 def process_text_with_model(extracted_text):
-    response = client.chat.completions.create(
-        model="llama-13b-chat",
-        messages=[
-            {"role": "system", "content": "You're a project Manager."},
-            {"role": "user", "content": extracted_text + "\nSummarize this"}
-        ]
-    )
-    return response.choices[0].message.content
+    # Build the API request with constraints
+    api_request_json = {
+        "messages": [
+            {"role": "system", "content": "You're a DBMS Teacher."},
+            {"role": "user", "content": extracted_text + "\nExplain this in detail"}
+        ],
+        "max_tokens": 1000,  # Maximum number of tokens in the response
+        "temperature": 0.1,  # Controls randomness in the output
+        "top_p": 1.0,        # Nucleus sampling
+        "frequency_penalty": 1.0,  # Penalizes new tokens based on their frequency in the text so far
+        "stream": False      # Disable streaming
+    }
+
+    # Execute the request
+    response = llama.run(api_request_json)
+    
+    # Return the content of the response
+    return response.json()["choices"][0]["message"]["content"]
+
