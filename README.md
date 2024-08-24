@@ -1,4 +1,4 @@
-###ProjectManagerAI
+ProjectManagerAI
 
 ProjectManagerAI is a revolutionary web application that leverages Generative AI to redefine the landscape of project management. By integrating advanced AI capabilities with robust planning tools, ProjectManagerAI offers an unparalleled approach to optimizing project planning and execution.
 
