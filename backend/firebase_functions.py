@@ -3,17 +3,25 @@ from firebase_admin import credentials, storage, firestore
 from flask import request, redirect, url_for, render_template
 from dotenv import load_dotenv
 import os
+import json  # Add json to parse the dictionary from .env
 from pdf_to_text import extract_pdf_text
-from model import process_text_with_model  # Import the model function here
+from model import process_text_with_gemini
 
 # Initialize Firebase Admin SDK
 load_dotenv()
 
-cred_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-if not cred_path or not os.path.isfile(cred_path):
-    raise ValueError(f"Invalid GOOGLE_APPLICATION_CREDENTIALS path: {cred_path}")
+# Get the credentials dictionary as a string from the .env file
+cred_dict_str = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_DICT')
 
-cred = credentials.Certificate(cred_path)
+# Check if the string is present in the .env file
+if not cred_dict_str:
+    raise ValueError(f"GOOGLE_APPLICATION_CREDENTIALS_DICT is not defined in the environment")
+
+# Convert the string to a dictionary (JSON format)
+cred_dict = json.loads(cred_dict_str)
+
+# Initialize Firebase using the dictionary credentials directly
+cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'freesic-storage.appspot.com'
 })
@@ -101,9 +109,10 @@ def view_file(file_id):
             update_text_content(doc_ref, text_content)
 
         # Call the model to process the extracted text
-        model_response = process_text_with_model(text_content)
+        model_response = process_text_with_gemini(text_content)
 
-        return model_response
+        # Instead of returning raw HTML, pass it to the template
+        return render_template('view.html', file=file, model_response=model_response)
 
     except Exception as e:
         return f'Error: {str(e)}', 500
