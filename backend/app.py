@@ -17,9 +17,8 @@ def manage():
 
 @app.route('/view/<file_id>')
 def view(file_id):
-    # Call view_file to get the file content
-    model_response = view_file(file_id)
-    return render_template('view.html', response=model_response)
+    # Simply return the result of view_file, which already renders the template
+    return view_file(file_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
